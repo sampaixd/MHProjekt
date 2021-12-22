@@ -46,6 +46,9 @@ def UpdateData(updatedData):
     pickledData = pickle.dumps(updatedData)
     pickledDataLen = len(pickledData)
 
+    #first sends a message to tell the server that you want to update the data
+    client.send("SendData".encode(FORMAT))
+
     #sends the length of the data as well as the pickled data
     client.send(str(pickledDataLen).encode(FORMAT))
     client.send(pickledData)
