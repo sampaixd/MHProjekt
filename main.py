@@ -19,8 +19,8 @@ SERVER = ''
 ADDR = (SERVER, PORT)   
 
 #sets up the connection
-"""client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)"""
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(ADDR)
 
 #method to recieve all data
 def GetData(shoppinglist, referenceindex):
@@ -40,7 +40,7 @@ def GetData(shoppinglist, referenceindex):
     return shoppinglist, referenceindex
 
 #method to update the database at the server computer
-def UpdateData(updatedData):
+def SendData(updatedData):
 
     #pickles the data and gets its length
     pickledData = pickle.dumps(updatedData)
@@ -50,7 +50,9 @@ def UpdateData(updatedData):
     client.send("SendData".encode(FORMAT))
 
     #sends the length of the data as well as the pickled data
-    client.send(str(pickledDataLen).encode(FORMAT))
+    pickledDatalen = str(pickledDataLen).encode(FORMAT)
+    print(pickledDatalen)
+    client.send(pickledDatalen)
     client.send(pickledData)
 
     #prints out conformation message
@@ -461,10 +463,10 @@ def UpdateData(referenceindex, shoppinglist):
 
         elif action == 0:
             pass
-            #shoppinglist, referenceindex = GetData(shoppinglist, referenceindex)
+            shoppinglist, referenceindex = GetData(shoppinglist, referenceindex)
 
         else:
-            #SendData(referenceindex)
+            SendData(referenceindex)
             pass
 
 #method for main menu
@@ -541,10 +543,10 @@ def main():
     mainmenu(title, content, shoppinglist, referenceindex)
 
 if __name__ == '__main__':
-    #try:
-    main()
-    """except:
+    try:
+        main()
+    except:
         print("Ett fel uppstod, programmet avslutades")
     finally:
-        pass
-        #client.send(DISCONNECT_MSG.encode(FORMAT))"""
+        
+        client.send(DISCONNECT_MSG.encode(FORMAT))
