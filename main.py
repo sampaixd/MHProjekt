@@ -1,5 +1,6 @@
-from ctypes import set_last_error
-import msvcrt
+#from ctypes import set_last_error
+#import msvcrt  #windows
+import getch    #linux
 import os
 import sys
 import socket
@@ -25,11 +26,15 @@ client.connect(ADDR)
 #method to recieve all data
 def GetData(shoppinglist, referenceindex):
 
+    #clears prevoius lists
+    shoppinglist.clear()
+    referenceindex.clear()
+
     #send the command to start the process of sending data
     client.send("GetData".encode(FORMAT))
     
     #first gets the length of the data, and then the actual data
-    recvshoplistlen = int(client.recv(HEADER.decode(FORMAT)))
+    recvshoplistlen = int(client.recv(HEADER).decode(FORMAT))
     recvshoplist = client.recv(recvshoplistlen)
     recvrefindexlen = int(client.recv(HEADER).decode(FORMAT))
     recvrefindex = client.recv(recvrefindexlen)
@@ -37,22 +42,38 @@ def GetData(shoppinglist, referenceindex):
     #unpickles data and puts it into the correct list
     shoppinglist = pickle.loads(recvshoplist)
     referenceindex = pickle.loads(recvrefindex)
+
+    #used for testing
+    """if not len(referenceindex): print("Referenceindex was empty")
+    for i in range(len(referenceindex)):
+        print(f"Name: {referenceindex[i].name}, url: {referenceindex[i].url}, ammount of references: {len(referenceindex[i].references)}")"""
+    print("Data mottagen!")
+
+
     return shoppinglist, referenceindex
 
 #method to update the database at the server computer
-def SendData(updatedData):
+def SendData(referenceindex):
 
     #pickles the data and gets its length
-    pickledData = pickle.dumps(updatedData)
+    pickledData = pickle.dumps(referenceindex)
     pickledDataLen = len(pickledData)
 
     #first sends a message to tell the server that you want to update the data
     client.send("SendData".encode(FORMAT))
 
-    #sends the length of the data as well as the pickled data
+    #get conformation msg of recieving the data length
+    
+    #sends the length of the data
     pickledDatalen = str(pickledDataLen).encode(FORMAT)
-    print(pickledDatalen)
-    client.send(pickledDatalen)
+    pickledDatalenB = pickledDatalen + b' ' * (HEADER - len(pickledDatalen))
+    print(pickledDatalenB)
+    client.send(pickledDatalenB)
+    
+    #waits for conformation msg
+    #print(client.recv(HEADER).decode(FORMAT))
+
+    #sends actual data
     client.send(pickledData)
 
     #prints out conformation message
@@ -212,29 +233,34 @@ def menuUX(optionslen, selectedcontent):
     #action is used when selecting a option, -2 does nothing, -1 will close the menu and everything above will activate a specified method 
     action = -2
     print(c.black)
-    pressedkey = str(msvcrt.getch())
+    #pressedkey = str(msvcrt.getch())   #windows
+    pressedkey = getch.getch()  #linux
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            case "b'w'" | "b'H'":
+            #case "b'w'" | "b'H'":  #windows
+            case "w" | "A":     #linux
                 if selectedcontent <= 0:
                     selectedcontent = optionslen - 1
  
                 else:
                     selectedcontent -= 1
             #button s and downarrow
-            case "b's'" | "b'P'":
+            #case "b's'" | "b'P'":   #windows
+            case "s" | "B":     #linux
  
                 if selectedcontent >= optionslen - 1:
                     selectedcontent = 0
                 else:
                     selectedcontent += 1
-            #button enter and d
-            case "b'\\r'" | "b'd'" | "b'M'":
+            #button enter, d and rightarrow
+            #case "b'\\r'" | "b'd'" | "b'M'":   #windows
+            case "\n" | "d" | "C":  #linux
                 action = selectedcontent
-            #button q and a
-            case "b'q'" | "b'a'" | "b'K'":
+            #button q, a and leftarrow
+            #case "b'q'" | "b'a'" | "b'K'":  #windows
+            case "q" | "a" | "D":   #linux
                 action = -1
     
     Clear()
@@ -459,7 +485,7 @@ def UpdateData(referenceindex, shoppinglist):
             continue
 
         elif action == -1:
-            loop = False
+            return shoppinglist, referenceindex
 
         elif action == 0:
             pass
@@ -497,14 +523,14 @@ def mainmenu(title, content, shoppinglist, referenceindex):
             HandleData(referenceindex, shoppinglist)
 
         elif action == 2:
-            UpdateData(referenceindex, shoppinglist)
+            shoppinglist, referenceindex = UpdateData(referenceindex, shoppinglist)
 
         elif action == 3:
             loop = False
 
 
 
-Clear = lambda: os.system('cls')
+Clear = lambda: os.system('clear')
 
 #used for testing
 def CheckData(referenceindex):
@@ -517,9 +543,9 @@ def main():
     #sets up the lists that will be shopping list and the url required
     shoppinglist = []
     referenceindex = []
-    #shoppinglist, referenceindex = GetData()
+    shoppinglist, referenceindex = GetData(shoppinglist, referenceindex)
     #used for testing the management of databases
-    shoppinglist.append(Ware("julmust", 2))
+    """shoppinglist.append(Ware("julmust", 2))
     shoppinglist.append(Ware("sill", 3))
     shoppinglist.append(Ware("laxrom", 4))
     shoppinglist.append(Ware("lindt", 1))
@@ -534,7 +560,7 @@ def main():
     referenceindex.append(WareReference("sill", "https://www.mathem.se/varor/sill-ovriga-sorter/lingon-o-enbarssill-280ml-erssons"))
     referenceindex.append(WareReference("laxrom", "https://www.mathem.se/varor/laxrom/regnbagslaxrom-fryst-80g-fiskeriet"))
     referenceindex.append(WareReference("lindt", "https://www.mathem.se/varor/chokladkaka-mork/choklad-70--100g-lindt-excellence"))
-    referenceindex.append(WareReference("vara 5", "https://www.mathem.se/varor/apelsin/apelsin-klass1"))
+    referenceindex.append(WareReference("vara 5", "https://www.mathem.se/varor/apelsin/apelsin-klass1"))"""
 
 
     Clear()

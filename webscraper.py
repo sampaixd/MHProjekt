@@ -1,11 +1,12 @@
 from selenium import webdriver
 from colors import Color as c
 from time import sleep
-import msvcrt
+#import msvcrt  #windows
+import getch    #linux
 import os
 
 #initalize the webdriver
-web = webdriver.Chrome('C:\chromedriver')
+web = webdriver.Chrome('chromedriver')
 
 
 
@@ -101,32 +102,38 @@ def LookForSales(shoppinglist, referenceindex):
 
 def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
     print(c.black)
-    pressedkey = str(msvcrt.getch())
+    #pressedkey = str(msvcrt.getch())   #windows
+    pressedkey = str(getch.getch())
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            case "b'w'" | "b'H'":
+            #case "b'w'" | "b'H'":  #windows
+            case "w" | "A":     #linux
                 if selectedoptiontV <= 0:
                     selectedoptiontV = saleslen
  
                 else:
                     selectedoptiontV -= 1
             #button s and downarrow
-            case "b's'" | "b'P'":
+            #case "b's'" | "b'P'":   #windows
+            case "s" | "B":     #linux
  
                 if selectedoptiontV >= saleslen:
                     selectedoptionV = 0
                 else:
                     selectedoptiontV += 1
-
-            case "b'a'" | "b'd'" | "b'K'" | "b'M'":
+            
+            #d, rightarrow, a, leftarrow
+            #case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
+            case "d" | "C" | "a" | "D": #linux
                 if selectedoptiontH == 1:
                     selectedoptiontH = 0
                 else:
                     selectedoptiontH = 1
             #button enter
-            case "b'\\r'":
+            #case "b'\\r'":  #windows
+            case "\n":  #linux
                 if selectedoptiontV < saleslen:
                     sales[selectedoptiontV].buy = selectedoptiontH
                 else:
@@ -259,7 +266,7 @@ def BuyWares(shoppinglist, referenceindex):
                         button.click()
                     except:
 
-                        print(f"Kunde bara lägga i {m} utav {shoppinglist[m].ammount} i kundvagnen")
+                        print(f"Kunde bara lägga i {m} utav {shoppinglist[m].ammount} varor i kundvagnen")
                         shopresults.append(ShopResult(f"{c.error}{shoppinglist[m].name}{c.default}", f"Kunde endast lägga i {m} utav {shoppinglist[m].ammount} i kundvagnen"))
                         break
 
@@ -283,5 +290,5 @@ def ShowShoppingResults(shopresults):
 
     input("Tryck på enter för att gå tillbaka till huvudmenyn")
 
-Clear = lambda: os.system('cls')
+Clear = lambda: os.system('clear')
     

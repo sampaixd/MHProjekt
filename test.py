@@ -1,6 +1,6 @@
-import msvcrt
+import getch
 from colors import Color as c
 
 while True:
-    pressedkey = str(msvcrt.getch())
-    print(pressedkey)
+    pressedkey = getch.getche()
+    #print(pressedkey)
