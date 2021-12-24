@@ -1,6 +1,7 @@
 #from ctypes import set_last_error
-#import msvcrt  #windows
-import getch    #linux
+#
+import msvcrt  #windows
+#import getch    #linux
 import os
 import sys
 import socket
@@ -35,9 +36,19 @@ def GetData(shoppinglist, referenceindex):
     
     #first gets the length of the data, and then the actual data
     recvshoplistlen = int(client.recv(HEADER).decode(FORMAT))
-    recvshoplist = client.recv(recvshoplistlen)
+    
+    recvshoplist = b''
+    while len(recvshoplist) < recvshoplistlen:
+        temprecvshoplist = client.recv(recvshoplistlen)
+        recvshoplist += temprecvshoplist
+
     recvrefindexlen = int(client.recv(HEADER).decode(FORMAT))
-    recvrefindex = client.recv(recvrefindexlen)
+    
+    recvrefindex = b''
+
+    while len(recvrefindex) < recvrefindexlen:  #makes sure you get the entire list, in an attempt to make the application more future proof
+        temprecvrefindex = client.recv(recvrefindexlen)
+        recvrefindex += temprecvrefindex
 
     #unpickles data and puts it into the correct list
     shoppinglist = pickle.loads(recvshoplist)
@@ -233,34 +244,34 @@ def menuUX(optionslen, selectedcontent):
     #action is used when selecting a option, -2 does nothing, -1 will close the menu and everything above will activate a specified method 
     action = -2
     print(c.black)
-    #pressedkey = str(msvcrt.getch())   #windows
-    pressedkey = getch.getch()  #linux
+    pressedkey = str(msvcrt.getch())   #windows
+    #pressedkey = getch.getch()  #linux
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            #case "b'w'" | "b'H'":  #windows
-            case "w" | "A":     #linux
+            case "b'w'" | "b'H'":  #windows
+            #case "w" | "A":     #linux
                 if selectedcontent <= 0:
                     selectedcontent = optionslen - 1
  
                 else:
                     selectedcontent -= 1
             #button s and downarrow
-            #case "b's'" | "b'P'":   #windows
-            case "s" | "B":     #linux
+            case "b's'" | "b'P'":   #windows
+            #case "s" | "B":     #linux
  
                 if selectedcontent >= optionslen - 1:
                     selectedcontent = 0
                 else:
                     selectedcontent += 1
             #button enter, d and rightarrow
-            #case "b'\\r'" | "b'd'" | "b'M'":   #windows
-            case "\n" | "d" | "C":  #linux
+            case "b'\\r'" | "b'd'" | "b'M'":   #windows
+            #case "\n" | "d" | "C":  #linux
                 action = selectedcontent
             #button q, a and leftarrow
-            #case "b'q'" | "b'a'" | "b'K'":  #windows
-            case "q" | "a" | "D":   #linux
+            case "b'q'" | "b'a'" | "b'K'":  #windows
+            #case "q" | "a" | "D":   #linux
                 action = -1
     
     Clear()
@@ -530,7 +541,7 @@ def mainmenu(title, content, shoppinglist, referenceindex):
 
 
 
-Clear = lambda: os.system('clear')
+Clear = lambda: os.system('cls')
 
 #used for testing
 def CheckData(referenceindex):
@@ -544,6 +555,7 @@ def main():
     shoppinglist = []
     referenceindex = []
     shoppinglist, referenceindex = GetData(shoppinglist, referenceindex)
+    
     #used for testing the management of databases
     """shoppinglist.append(Ware("julmust", 2))
     shoppinglist.append(Ware("sill", 3))
@@ -571,8 +583,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except:
+    except Exception as e:
         print("Ett fel uppstod, programmet avslutades")
+        print(e)
     finally:
         
         client.send(DISCONNECT_MSG.encode(FORMAT))

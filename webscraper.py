@@ -1,12 +1,12 @@
 from selenium import webdriver
 from colors import Color as c
 from time import sleep
-#import msvcrt  #windows
-import getch    #linux
+import msvcrt  #windows
+#import getch    #linux
 import os
 
 #initalize the webdriver
-web = webdriver.Chrome('chromedriver')
+web = webdriver.Chrome('C:/chromedriver')
 
 
 
@@ -73,6 +73,9 @@ def LookForSales(shoppinglist, referenceindex):
             print(shoppinglist[i].name)
             try:
                 sale = web.find_element_by_xpath(waresale).text
+                if not len(sale):
+                    print("Ingen rabatt hittad")
+                    continue
                 foundsale = False
                 for l in range(len(sale)):
                     #print(sale[l])
@@ -93,7 +96,6 @@ def LookForSales(shoppinglist, referenceindex):
 
             except:
                 print("Ingen rabatt hittad")
-    input("tryck på enter för att fortsätta")
     Clear()
 
     #ShowSales(shoppinglist)
@@ -102,22 +104,22 @@ def LookForSales(shoppinglist, referenceindex):
 
 def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
     print(c.black)
-    #pressedkey = str(msvcrt.getch())   #windows
-    pressedkey = str(getch.getch())
+    pressedkey = str(msvcrt.getch())   #windows
+    #pressedkey = str(getch.getch())
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            #case "b'w'" | "b'H'":  #windows
-            case "w" | "A":     #linux
+            case "b'w'" | "b'H'":  #windows
+            #case "w" | "A":     #linux
                 if selectedoptiontV <= 0:
                     selectedoptiontV = saleslen
  
                 else:
                     selectedoptiontV -= 1
             #button s and downarrow
-            #case "b's'" | "b'P'":   #windows
-            case "s" | "B":     #linux
+            case "b's'" | "b'P'":   #windows
+            #case "s" | "B":     #linux
  
                 if selectedoptiontV >= saleslen:
                     selectedoptionV = 0
@@ -125,15 +127,15 @@ def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
                     selectedoptiontV += 1
             
             #d, rightarrow, a, leftarrow
-            #case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
-            case "d" | "C" | "a" | "D": #linux
+            case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
+            #case "d" | "C" | "a" | "D": #linux
                 if selectedoptiontH == 1:
                     selectedoptiontH = 0
                 else:
                     selectedoptiontH = 1
             #button enter
-            #case "b'\\r'":  #windows
-            case "\n":  #linux
+            case "b'\\r'":  #windows
+            #case "\n":  #linux
                 if selectedoptiontV < saleslen:
                     sales[selectedoptiontV].buy = selectedoptiontH
                 else:
@@ -157,7 +159,10 @@ def ChooseSales():
     loop = True
 
     while loop:
-        print("Rabatter hittade:         köp?\n")
+        if biggestsale > 5:
+            print("Rabatter hittade:" + " " * (biggestsale - 11) + "köp?\n")
+        else:
+            print("Rabatter hittade: Inga")
 
 
         for i in range(len(sales)):
@@ -290,5 +295,5 @@ def ShowShoppingResults(shopresults):
 
     input("Tryck på enter för att gå tillbaka till huvudmenyn")
 
-Clear = lambda: os.system('clear')
+Clear = lambda: os.system('cls')
     
