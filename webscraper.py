@@ -1,8 +1,9 @@
 from selenium import webdriver
 from colors import Color as c
 from time import sleep
-import msvcrt  #windows
-#import getch    #linux
+from copy import deepcopy
+#import msvcrt  #windows
+import getch    #linux
 import os
 
 #initalize the webdriver
@@ -104,22 +105,22 @@ def LookForSales(shoppinglist, referenceindex):
 
 def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
     print(c.black)
-    pressedkey = str(msvcrt.getch())   #windows
-    #pressedkey = str(getch.getch())
+    #pressedkey = str(msvcrt.getch())   #windows
+    pressedkey = str(getch.getch())
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            case "b'w'" | "b'H'":  #windows
-            #case "w" | "A":     #linux
+            #case "b'w'" | "b'H'":  #windows
+            case "w" | "A":     #linux
                 if selectedoptiontV <= 0:
                     selectedoptiontV = saleslen
  
                 else:
                     selectedoptiontV -= 1
             #button s and downarrow
-            case "b's'" | "b'P'":   #windows
-            #case "s" | "B":     #linux
+            #case "b's'" | "b'P'":   #windows
+            case "s" | "B":     #linux
  
                 if selectedoptiontV >= saleslen:
                     selectedoptionV = 0
@@ -127,15 +128,15 @@ def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
                     selectedoptiontV += 1
             
             #d, rightarrow, a, leftarrow
-            case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
-            #case "d" | "C" | "a" | "D": #linux
+            #case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
+            case "d" | "C" | "a" | "D": #linux
                 if selectedoptiontH == 1:
                     selectedoptiontH = 0
                 else:
                     selectedoptiontH = 1
             #button enter
-            case "b'\\r'":  #windows
-            #case "\n":  #linux
+            #case "b'\\r'":  #windows
+            case "\n":  #linux
                 if selectedoptiontV < saleslen:
                     sales[selectedoptiontV].buy = selectedoptiontH
                 else:
@@ -196,7 +197,8 @@ def ChooseSales():
             loop = False
 
 #method for buying wares
-def BuyWares(shoppinglist, referenceindex):
+def BuyWares(realshoppinglist, referenceindex):
+    shoppinglist = deepcopy(realshoppinglist) #used to make sure no changes are made to the real shoppinglist
     shopresults = [] #used for displaying the results of the shopping
     foundAllSales = False   #used for checking if all x for y sales have been found, in that case stops checking for sales
     currentSaleCheck = 0    #keeps check on what sale from the sales list is next
@@ -204,6 +206,7 @@ def BuyWares(shoppinglist, referenceindex):
     web.get('https://www.mathem.se/')
     input("Tryck på enter när du har loggat in")
     for i in range(len(shoppinglist)):
+        print(shoppinglist[i].ammount)
         url = ''
         sale = ""
         foundurl = False
@@ -221,21 +224,30 @@ def BuyWares(shoppinglist, referenceindex):
 
         else:
             web.get(url)
-            sleep(5)
+            sleep(2)
 
             try:    #since the program wouldnt stop even if the button was not pressed, I had to check if you could remove a ware instead
                 button = web.find_element_by_xpath(addware)
                 button.click()
+                
                 sleep(1)
                 button = web.find_element_by_xpath(removeware)
                 button.click()
+                
                 sleep(1)
                 try:    #if there is a special sale, addware would not work since the bought ammount would not be 0
                     button = web.find_element_by_xpath(addware)
                     button.click()
+                    #########add this code if you buy too many wares###########
+                    button = web.find_element_by_xpath(removeware)
+                    button.click()
+                     
+                    ############################################################
                 except:
                     button = web.find_element_by_xpath(addmorewares)
                     button.click()
+                    
+
 
             except:
                 print("Kunde inte lägga varan i kundvagnen")
@@ -259,7 +271,7 @@ def BuyWares(shoppinglist, referenceindex):
                     currentSaleCheck += 1
                     if currentSaleCheck == len(sales):  foundAllSales = True    #sets foundallsales to True if all sales have been found to avoid trying to get non existing lists
 
-
+            print(shoppinglist[i].ammount)
 
 
             if shoppinglist[i].ammount > 1:
@@ -269,6 +281,8 @@ def BuyWares(shoppinglist, referenceindex):
 
                     try:
                         button.click()
+                        
+                        sleep(0.1)
                     except:
 
                         print(f"Kunde bara lägga i {m} utav {shoppinglist[m].ammount} varor i kundvagnen")
@@ -281,6 +295,8 @@ def BuyWares(shoppinglist, referenceindex):
                 for m in range(-shoppinglist[i].ammount):
                     button.click()
                     
+                    sleep(0.1)
+        sleep(1)
         if len(shopresults) - 1 < i: #checks that the current ware has not been added prior to this, then adds it with green to show that buying the ware was a success
             print("Köp lyckades")
             shopresults.append(ShopResult(f"{c.green}{shoppinglist[i].name}{c.default}", ""))

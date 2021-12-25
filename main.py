@@ -1,7 +1,7 @@
 #from ctypes import set_last_error
 #
-import msvcrt  #windows
-#import getch    #linux
+#import msvcrt  #windows
+import getch    #linux
 import os
 import sys
 import socket
@@ -244,34 +244,34 @@ def menuUX(optionslen, selectedcontent):
     #action is used when selecting a option, -2 does nothing, -1 will close the menu and everything above will activate a specified method 
     action = -2
     print(c.black)
-    pressedkey = str(msvcrt.getch())   #windows
-    #pressedkey = getch.getch()  #linux
+    #pressedkey = str(msvcrt.getch())   #windows
+    pressedkey = getch.getch()  #linux
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            case "b'w'" | "b'H'":  #windows
-            #case "w" | "A":     #linux
+            #case "b'w'" | "b'H'":  #windows
+            case "w" | "A":     #linux
                 if selectedcontent <= 0:
                     selectedcontent = optionslen - 1
  
                 else:
                     selectedcontent -= 1
             #button s and downarrow
-            case "b's'" | "b'P'":   #windows
-            #case "s" | "B":     #linux
+            #case "b's'" | "b'P'":   #windows
+            case "s" | "B":     #linux
  
                 if selectedcontent >= optionslen - 1:
                     selectedcontent = 0
                 else:
                     selectedcontent += 1
             #button enter, d and rightarrow
-            case "b'\\r'" | "b'd'" | "b'M'":   #windows
-            #case "\n" | "d" | "C":  #linux
+            #case "b'\\r'" | "b'd'" | "b'M'":   #windows
+            case "\n" | "d" | "C":  #linux
                 action = selectedcontent
             #button q, a and leftarrow
-            case "b'q'" | "b'a'" | "b'K'":  #windows
-            #case "q" | "a" | "D":   #linux
+            #case "b'q'" | "b'a'" | "b'K'":  #windows
+            case "q" | "a" | "D":   #linux
                 action = -1
     
     Clear()
