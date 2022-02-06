@@ -2,8 +2,8 @@ from selenium import webdriver
 from colors import Color as c
 from time import sleep
 from copy import deepcopy
-#import msvcrt  #windows
-import getch    #linux
+import msvcrt  #windows
+#import getch    #linux
 import os
 
 #initalize the webdriver
@@ -105,22 +105,22 @@ def LookForSales(shoppinglist, referenceindex):
 
 def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
     print(c.black)
-    #pressedkey = str(msvcrt.getch())   #windows
-    pressedkey = str(getch.getch())
+    pressedkey = str(msvcrt.getch())   #windows
+    #pressedkey = str(getch.getch())     #linux
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            #case "b'w'" | "b'H'":  #windows
-            case "w" | "A":     #linux
+            case "b'w'" | "b'H'":  #windows
+            #case "w" | "A":     #linux
                 if selectedoptiontV <= 0:
                     selectedoptiontV = saleslen
  
                 else:
                     selectedoptiontV -= 1
             #button s and downarrow
-            #case "b's'" | "b'P'":   #windows
-            case "s" | "B":     #linux
+            case "b's'" | "b'P'":   #windows
+            #case "s" | "B":     #linux
  
                 if selectedoptiontV >= saleslen:
                     selectedoptionV = 0
@@ -128,15 +128,15 @@ def ChooseSalesUX(selectedoptiontV, selectedoptiontH, saleslen):
                     selectedoptiontV += 1
             
             #d, rightarrow, a, leftarrow
-            #case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
-            case "d" | "C" | "a" | "D": #linux
+            case "b'a'" | "b'd'" | "b'K'" | "b'M'": #windows
+            #case "d" | "C" | "a" | "D": #linux
                 if selectedoptiontH == 1:
                     selectedoptiontH = 0
                 else:
                     selectedoptiontH = 1
             #button enter
-            #case "b'\\r'":  #windows
-            case "\n":  #linux
+            case "b'\\r'":  #windows
+            #case "\n":  #linux
                 if selectedoptiontV < saleslen:
                     sales[selectedoptiontV].buy = selectedoptiontH
                 else:

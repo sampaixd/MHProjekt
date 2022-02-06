@@ -1,7 +1,7 @@
 #from ctypes import set_last_error
 #
-#import msvcrt  #windows
-import getch    #linux
+import msvcrt  #windows
+#import getch    #linux
 import os
 import sys
 import socket
@@ -71,7 +71,9 @@ def SendData(referenceindex):
     pickledDataLen = len(pickledData)
 
     #first sends a message to tell the server that you want to update the data
-    client.send("SendData".encode(FORMAT))
+    senddatamsg = "SendData".encode(FORMAT)
+    senddatamsg += b' ' * (HEADER - len(senddatamsg))
+    client.send(senddatamsg)
 
     #get conformation msg of recieving the data length
     
@@ -244,34 +246,34 @@ def menuUX(optionslen, selectedcontent):
     #action is used when selecting a option, -2 does nothing, -1 will close the menu and everything above will activate a specified method 
     action = -2
     print(c.black)
-    #pressedkey = str(msvcrt.getch())   #windows
-    pressedkey = getch.getch()  #linux
+    pressedkey = str(msvcrt.getch())   #windows
+    #pressedkey = getch.getch()  #linux
     print(c.default)
     
     match(pressedkey):
             #button w and uparrow
-            #case "b'w'" | "b'H'":  #windows
-            case "w" | "A":     #linux
+            case "b'w'" | "b'H'":  #windows
+            #case "w" | "A":     #linux
                 if selectedcontent <= 0:
                     selectedcontent = optionslen - 1
  
                 else:
                     selectedcontent -= 1
             #button s and downarrow
-            #case "b's'" | "b'P'":   #windows
-            case "s" | "B":     #linux
+            case "b's'" | "b'P'":   #windows
+            #case "s" | "B":     #linux
  
                 if selectedcontent >= optionslen - 1:
                     selectedcontent = 0
                 else:
                     selectedcontent += 1
             #button enter, d and rightarrow
-            #case "b'\\r'" | "b'd'" | "b'M'":   #windows
-            case "\n" | "d" | "C":  #linux
+            case "b'\\r'" | "b'd'" | "b'M'":   #windows
+            #case "\n" | "d" | "C":  #linux
                 action = selectedcontent
             #button q, a and leftarrow
-            #case "b'q'" | "b'a'" | "b'K'":  #windows
-            case "q" | "a" | "D":   #linux
+            case "b'q'" | "b'a'" | "b'K'":  #windows
+            #case "q" | "a" | "D":   #linux
                 action = -1
     
     Clear()
@@ -293,19 +295,51 @@ def menuUI(title, content, selectedcontent):
 #similar to menuUI but changed to work for the reference index list
 #prevcontent is the content previously chosen, contentoptionsspacing is the space in between the current content and the content inside the currently selected content
 #contentoptions is the content inside the currently selected content, for example if you have references selected the contentoptions will be all of the references
-def RefIndexUI(title, content, prevcontent, contentoptionsspacing, contentoptions, selectedcontent):   
+def RefIndexUI(title, content, prevcontent, contentoptionsspacing, contentoptions, selectedcontent, prevfirstItem, prevlastItem):
+
+    print(f"current item: {selectedcontent}")
+
+    #start and stop values for the displayed items
+    
+    if len(content) < 15:
+        firstItem = 1
+        lastItem = len(content) - 1
+
+    else:
+        if selectedcontent <= 1:
+            firstItem = 1
+            lastItem = 16
+
+        elif selectedcontent == len(content) - 1:
+            firstItem = len(content) - 16
+            lastItem = len(content) - 1
+
+        else:
+            if selectedcontent > prevlastItem:
+                firstItem = selectedcontent - 15
+                lastItem = selectedcontent
+
+            elif selectedcontent < prevfirstItem:
+                firstItem = selectedcontent
+                lastItem = selectedcontent + 15
+            
+            else:
+                firstItem = prevfirstItem
+                lastItem = prevlastItem
+    print(f"first item: {firstItem}, last item: {lastItem}")
+
     print(title)
     print()
     print(prevcontent, end="")     #prints the previous content
+    if firstItem == 1:
+        if selectedcontent == 0:
 
-    if selectedcontent == 0:
+            print(c.selected, end="")   #if the first content is selected
 
-        print(c.selected, end="")   #if the first content is selected
+        print(content[0] + c.default, end="")
+        print(" " * (contentoptionsspacing - len(content[0])) + contentoptions[0])    #also prints the options avalible (either edit/remove or )
 
-    print(content[0] + c.default, end="")
-    print(" " * (contentoptionsspacing - len(content[0])) + contentoptions[0])    #also prints the options avalible (either edit/remove or )
-
-    for i in range(1, len(content)):
+    for i in range(firstItem, lastItem + 1):
         #blank spaces for additional options
         print(" " * len(prevcontent), end="")
 
@@ -322,7 +356,7 @@ def RefIndexUI(title, content, prevcontent, contentoptionsspacing, contentoption
     if len(contentoptions) > len(content):
         for i in range(len(content), len(contentoptions)):
             print(" " * (len(prevcontent) + contentoptionsspacing) + contentoptions[i])
-
+    return firstItem, lastItem
 
 #method for looking at the shopping list
 def ShoppingListMenu(title, content):
@@ -360,6 +394,8 @@ def ShoppingListMenu(title, content):
 def ReferenceIndexMenu(referenceindex):
     selectedcontent = 0
     action = -2
+    firstItem = 1
+    lastItem = 10
     title = "Referens databas"
     loop = True
     biggestcontent = 0
@@ -373,7 +409,7 @@ def ReferenceIndexMenu(referenceindex):
     biggestcontent += 5
 
     while loop:
-        RefIndexUI(title, refindexnames, "", biggestcontent, referenceindex[selectedcontent].references, selectedcontent)
+        firstItem, lastItem = RefIndexUI(title, refindexnames, "", biggestcontent, referenceindex[selectedcontent].references, selectedcontent, firstItem, lastItem)
         action, selectedcontent = menuUX(len(referenceindex), selectedcontent)
 
         if action == -2:
@@ -399,6 +435,8 @@ def ReferenceIndexMenu(referenceindex):
 def ReferenceIndexReferencesMenu(prevcontent, references, referenceindex):
     selectedcontent = 0
     action = -2
+    firstItem = 1
+    lastItem = 10
     title = "Referens databas"
     loop = True
     biggestreference = 0
@@ -409,8 +447,8 @@ def ReferenceIndexReferencesMenu(prevcontent, references, referenceindex):
             biggestreference = len(references[i])
     biggestreference += 5
     while loop:
-        
-        RefIndexUI(title, references, prevcontent, biggestreference, ["Ändra", "Ta bort"], selectedcontent)
+        #prevcontent
+        firstItem, lastItem = RefIndexUI(title, references, "", biggestreference, ["Ändra", "Ta bort"], selectedcontent, firstItem, lastItem)
         action, selectedcontent = menuUX(len(references), selectedcontent)
         
         if action == -2:
@@ -423,8 +461,8 @@ def ReferenceIndexReferencesMenu(prevcontent, references, referenceindex):
             AddReference(references)
 
         else:
-            optprevcontent = prevcontent + references[selectedcontent] + " " * (biggestreference - len(references[selectedcontent]))
-            ReferenceIndexReferencesOptionsMenu(optprevcontent, ["Ändra", "Ta bort"], references, selectedcontent, referenceindex)
+            prevcontent = references[selectedcontent] + " " * (biggestreference - len(references[selectedcontent]))
+            ReferenceIndexReferencesOptionsMenu(prevcontent, ["Ändra", "Ta bort"], references, selectedcontent, referenceindex)
             if len(references) - 1 < selectedcontent:
                 selectedcontent = len(references) - 1
             
@@ -433,11 +471,13 @@ def ReferenceIndexReferencesMenu(prevcontent, references, referenceindex):
 def ReferenceIndexReferencesOptionsMenu(prevcontent, options, references, currentreference, referenceindex):
     action = -2
     selectedcontent = 0
+    firstItem = 1
+    lastItem = 10
     title = "Referens databas"
     loop = True
     while loop:
         #sending in a "" for the options since there is atleast 1 option required
-        RefIndexUI(title, options, prevcontent, 0, [""], selectedcontent)
+        firstItem, lastItem = RefIndexUI(title, options, prevcontent, 0, [""], selectedcontent, firstItem, lastItem)
         action, selectedcontent = menuUX(len(options), selectedcontent)
         if action == -2:
             pass
